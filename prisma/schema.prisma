@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  name      String
+  sku       String?  @unique
+  price     Float
+  cost      Float?
+  stock     Int      @default(0)
+  category  String?
+  image     String?  // URL path under /uploads or data URL
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  saleItems SaleItem[]
+}
+
+model Sale {
+  id         Int        @id @default(autoincrement())
+  total      Float
+  received   Float
+  change     Float
+  method     String     @default("cash") // cash | qr
+  createdAt  DateTime   @default(now())
+  items      SaleItem[]
+}
+
+model SaleItem {
+  id        Int     @id @default(autoincrement())
+  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  saleId    Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  name      String
+  price     Float
+  qty       Int
+}
+
+model Setting {
+  key   String @id
+  value String
+}
